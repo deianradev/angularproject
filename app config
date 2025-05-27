@@ -1,0 +1,12 @@
+async loadConfig(): Promise<void> {
+  const env = (window as any).globalServerEnv || 'local';
+  try {
+    const data = await lastValueFrom(
+      this.http.get(`/assets/env/env.${env}.json`)
+    );
+    this.config = data;
+    localStorage.setItem('externalUrl', this.config.externalUrl);
+  } catch (error) {
+    console.error('Failed to load config', error);
+  }
+}
