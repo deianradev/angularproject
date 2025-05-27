@@ -1,0 +1,30 @@
+import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpEvent, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { AppConfigService } from '../services/app-config.service';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+export const authInterceptor: HttpInterceptorFn = (request: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
+  const router = inject(Router);
+  const appConfig = inject(AppConfigService);
+
+  const token = localStorage.getItem('token') || '';
+  const apiEndpoint = appConfig.get('apiEndpoint') || '';
+
+  const updatedRequest = request.clone({
+    url: `${apiEndpoint}${request.url}`,
+    setHeaders: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  return next(updatedRequest).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        router.navigate(['/login']);
+      }
+      return throwError(() => error);
+    })
+  );
+};
