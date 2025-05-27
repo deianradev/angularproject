@@ -1,0 +1,36 @@
+initialize(): void {
+  let token = this.getToken();
+
+  if (!token) {
+    const currentUrl = window.location.href;
+    const urlToken = this.extractTokenFromUrl(currentUrl);
+    if (urlToken) {
+      localStorage.setItem(this.TOKEN_KEY, urlToken);
+      token = urlToken;
+      localStorage.setItem(this.LOGIN_CREATED_KEY, 'true');
+    }
+  }
+
+  if (token) {
+    const decoded = this.decodeToken(token);
+    if (decoded) {
+      const expireDate = new Date(decoded.exp * 1000);
+      localStorage.setItem(this.EXPIRE_DATE_KEY, expireDate.toISOString());
+      localStorage.setItem(this.USERNAME_KEY, decoded.username || '');
+      if (expireDate < new Date()) {
+        this.logout('Token expired');
+      }
+    }
+  } else {
+    this.clearAuthData();
+  }
+}
+
+
+private extractTokenFromUrl(url: string): string | null {
+  const loginIndex = url.indexOf('/login/');
+  if (loginIndex !== -1) {
+    return url.substring(loginIndex + 7, loginIndex + 7 + 6); // adjust length if needed
+  }
+  return null;
+}
