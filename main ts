@@ -1,18 +1,18 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
-import { inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { AppConfigService } from './app/services/app-config.service';
 
-(async () => {
-  const appConfigService = new AppConfigService(
-    inject(HttpClient) // or inject here if needed
-  );
+bootstrapApplication(AppComponent, {
+  providers: [
+    ...appConfig.providers
+  ],
+}).then(appRef => {
+  const injector = appRef.injector;
+  const http = injector.get(HttpClient);
+  const configService = new AppConfigService(http);
 
-  await appConfigService.loadConfig();
-
-  bootstrapApplication(AppComponent, appConfig)
-    .catch(err => console.error(err));
-})();
+  return configService.loadConfig();
+}).catch(err => console.error(err));
