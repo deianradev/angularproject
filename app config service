@@ -1,0 +1,28 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AppConfigService {
+  private config: any;
+
+  constructor(private http: HttpClient) {}
+
+  loadConfig(): Promise<void> {
+    const env = (window as any).globalServerEnv || 'local';
+    return this.http.get(`/assets/env/env.${env}.json`)
+      .toPromise()
+      .then(data => {
+        this.config = data;
+        localStorage.setItem('externalUrl', this.config.externalurl);
+      })
+      .catch(error => {
+        console.error('Failed to load config', error);
+      });
+  }
+
+  get(key: string): any {
+    return this.config ? this.config[key] : null;
+  }
+}
