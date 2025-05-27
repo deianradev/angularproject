@@ -1,0 +1,21 @@
+import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { AuthService } from './services/auth.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css'],
+})
+export class AppComponent implements OnInit, AfterViewInit {
+  title = 'app';
+
+  constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.authService.initialize();
+  }
+
+  ngAfterViewInit(): void {
+    // Only UI or view-specific logic here
+  }
+}
