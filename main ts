@@ -1,0 +1,18 @@
+import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { AppComponent } from './app/app.component';
+import { inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { HttpClient, provideHttpClient } from '@angular/common/http';
+import { AppConfigService } from './app/services/app-config.service';
+
+(async () => {
+  const appConfigService = new AppConfigService(
+    inject(HttpClient) // or inject here if needed
+  );
+
+  await appConfigService.loadConfig();
+
+  bootstrapApplication(AppComponent, appConfig)
+    .catch(err => console.error(err));
+})();
