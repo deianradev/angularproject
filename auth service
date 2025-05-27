@@ -1,0 +1,60 @@
+import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+import jwt_decode from 'jwt-decode';
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private readonly TOKEN_KEY = 'token';
+  private readonly LOGIN_CREATED_KEY = 'loginCreated';
+  private readonly EXPIRE_DATE_KEY = 'expireDate';
+  private readonly USERNAME_KEY = 'username';
+
+  constructor(private router: Router) {}
+
+  initialize(): void {
+    const token = this.getToken();
+    if (token) {
+      const decoded = this.decodeToken(token);
+      if (decoded) {
+        const expireDate = new Date(decoded.exp * 1000);
+        localStorage.setItem(this.EXPIRE_DATE_KEY, expireDate.toISOString());
+        localStorage.setItem(this.USERNAME_KEY, decoded.username || '');
+        if (expireDate < new Date()) {
+          this.logout('Token expired');
+        }
+      }
+    } else {
+      this.clearAuthData();
+    }
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  decodeToken(token: string): any | null {
+    try {
+      return jwt_decode(token);
+    } catch (err) {
+      console.error('Failed to decode token', err);
+      return null;
+    }
+  }
+
+  logout(reason: string = 'Logged out'): void {
+    console.log(reason);
+    this.clearAuthData();
+    this.router.navigate(['/login']);
+  }
+
+  private clearAuthData(): void {
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.LOGIN_CREATED_KEY);
+    localStorage.removeItem(this.EXPIRE_DATE_KEY);
+    localStorage.removeItem(this.USERNAME_KEY);
+  }
+
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+}
